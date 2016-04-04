@@ -1,0 +1,36 @@
+#!/sbin/runscript
+
+description="Scalable datastore for metrics, events, and real-time analytics"
+
+influxdb_config=${influxdb_config:-/etc/influxdb/influxdb.conf}
+
+command="/usr/bin/influxd"
+pidfile=${pidfile:-/run/influxdb/influxdb.pid}
+user=${user:-influxdb}
+group=${group:-influxdb}
+
+depend() {
+        need net
+        use dns logger netmount
+}
+
+start() {
+        ebegin "Starting InfluxDB"
+
+        # create pid dir
+        local pid_dir=$(dirname "${pidfile}")
+        if [ ! -d $pid_dir ]; then
+                einfo "Creating $pid_dir."
+                mkdir -p "$pid_dir" && chown "${user}:${group}" "$pid_dir"
+        fi
+
+        start-stop-daemon --start --quiet --pidfile "${pidfile}" --exec "${command}" --user "${user}" --group "${group}" -- -config "${influxdb_config}" -pidfile "${pidfile}" &
+        eend $?
+}
+
+stop() {
+        ebegin "Stopping InfluxDB"
+        start-stop-daemon --stop --pidfile "${pidfile}" --exec "${command}" &
+        eend $?
+}
+

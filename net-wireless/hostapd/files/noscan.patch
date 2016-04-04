@@ -1,0 +1,32 @@
+--- src/ap/hw_features.c	2016-03-19 17:27:11.745806990 +0300
++++ src/ap/hw_features.c	2016-03-19 17:29:04.918106940 +0300
+@@ -226,7 +226,7 @@
+ {
+ 	int pri_chan, sec_chan;
+ 
+-	if (!iface->conf->secondary_channel)
++	if (!iface->conf->secondary_channel || iface->conf->noscan)
+ 		return 1; /* HT40 not used */
+ 
+ 	pri_chan = iface->conf->channel;
+--- src/ap/ap_config.h	2016-03-19 17:27:11.745806990 +0300
++++ src/ap/ap_config.h	2016-03-19 17:28:35.362028606 +0300
+@@ -626,6 +626,7 @@
+ 
+ 	int ht_op_mode_fixed;
+ 	u16 ht_capab;
++	int noscan;
+ 	int ieee80211n;
+ 	int secondary_channel;
+ 	int no_pri_sec_switch;
+--- hostapd/config_file.c	2016-03-19 17:27:11.745806990 +0300
++++ hostapd/config_file.c	2016-03-19 17:28:10.313962219 +0300
+@@ -2795,6 +2795,8 @@
+ 		}
+ #endif /* CONFIG_IEEE80211W */
+ #ifdef CONFIG_IEEE80211N
++	} else if (os_strcmp(buf, "noscan") == 0) {
++		conf->noscan = atoi(pos);
+ 	} else if (os_strcmp(buf, "ieee80211n") == 0) {
+ 		conf->ieee80211n = atoi(pos);
+ 	} else if (os_strcmp(buf, "ht_capab") == 0) {
